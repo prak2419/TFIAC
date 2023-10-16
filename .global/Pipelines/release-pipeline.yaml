@@ -9,7 +9,7 @@ parameters:
 jobs:
   - deployment:
     pool: $(poolName)
-    displayName: 'Deploy Terraform to ${{ parameters.environment }}'
+    displayName: Deploy Terraform Modules
     environment: '${{ parameters.environment }}'
     workspace:
       clean: all
@@ -59,8 +59,7 @@ jobs:
                 $copydir = "C:\dev\tfstate"
                 if (!(Test-Path $copydir)) { New-Item -ItemType Directory -Force -Path $copydir }
                 $date = Get-Date -format '%y%m%d%H%M%S'
-                $buildversion = "${Build.BuildNumber}"
-                $appendString = "$date-$buildversion"
+                $appendString = "$date-"
                 Copy-Item $(System.ArtifactsDirectory)\Demo\${{ parameters.environment }}-tfplan C:\dev\tfstate\$appendString-${{ parameters.environment }}-tfplan
               displayName: 'Copy Terraform plan to remote folder'
               workingDirectory: '$(System.ArtifactsDirectory)\Demo'
