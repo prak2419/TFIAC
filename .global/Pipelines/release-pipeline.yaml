@@ -1,0 +1,75 @@
+parameters:
+  artifactName: $(artifactName)
+  moduleName: $(moduleName)
+  environment: $(environment)
+  backendResourceGroupName: $(backendResourceGroupName)
+  backendStorageAccountName: $(backendStorageAccountName)
+  backendContainerName: $(backendContainerName)
+
+jobs:
+  - deployment:
+    pool: $(poolName)
+    displayName: 'Deploy Terraform to ${{ parameters.environment }}'
+    environment: '${{ parameters.environment }}'
+    workspace:
+      clean: all
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - task: DownloadBuildArtifacts@1
+              displayName: 'Download Build Artifacts'
+              inputs:
+                buildType: 'current'
+                artifactName: ${{ parameters.artifactName }}
+                downloadType: 'single'
+                downloadPath: $(System.ArtifactsDirectory)
+        
+            - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@1
+              displayName: 'Install Terraform latest'
+              inputs:
+                terraformVersion: 'latest'
+
+            - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV4@4
+              displayName: 'Terraform : azurerm - Init'
+              inputs:
+                backendServiceArm: SharedResources
+                backendAzureRmResourceGroupName: ${{ parameters.backendResourceGroupName }}
+                backendAzureRmStorageAccountName: ${{ parameters.backendStorageAccountName }}
+                backendAzureRmContainerName: ${{ parameters.backendContainerName }}
+                backendAzureRmKey: '${{ parameters.moduleName }}-${{ parameters.environment }}.tfstate'
+                workingDirectory: '$(System.ArtifactsDirectory)\Demo'
+            
+            - powershell: |
+                terraform workspace new ${{ parameters.environment }}
+                terraform workspace select ${{ parameters.environment }}
+              displayName: 'Create and Set the Terraform workspace'
+              workingDirectory: '$(System.ArtifactsDirectory)\Demo'
+
+            - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV4@4
+              displayName: 'Terraform : azurerm - Plan'
+              inputs:
+                provider: azurerm
+                command: 'plan'
+                workingDirectory: '$(System.ArtifactsDirectory)\Demo'
+                commandOptions: '-var-file=${{ parameters.environment }}.auto.tfvars -out=${{ parameters.environment }}-tfplan'
+                environmentServiceNameAzureRM: SharedResources
+        
+            - powershell: |
+                $copydir = "C:\dev\tfstate"
+                if (!(Test-Path $copydir)) { New-Item -ItemType Directory -Force -Path $copydir }
+                $date = Get-Date -format '%y%m%d%H%M%S'
+                $buildversion = "${Build.BuildNumber}"
+                $appendString = "$date-$buildversion"
+                Copy-Item $(System.ArtifactsDirectory)\Demo\${{ parameters.environment }}-tfplan C:\dev\tfstate\$appendString-${{ parameters.environment }}-tfplan
+              displayName: 'Copy Terraform plan to remote folder'
+              workingDirectory: '$(System.ArtifactsDirectory)\Demo'
+
+            - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV4@4
+              displayName: 'Terraform : azurerm - Apply'
+              inputs:
+                provider: azurerm
+                command: 'apply'
+                workingDirectory: '$(System.ArtifactsDirectory)\Demo'
+                commandOptions: '-var-file=${{ parameters.environment }}.auto.tfvars -auto-approve'
+                environmentServiceNameAzureRM: SharedResources

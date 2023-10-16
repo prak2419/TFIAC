@@ -1,0 +1,33 @@
+parameters:
+  moduleName: $(moduleName)
+  artifactName: $(artifactName)
+  poolName: $(poolName)
+
+#Build Jobs
+jobs:
+  - job: 'BuildModule_vnetdemo'
+    pool: $(poolName)
+    displayName: 'Build Packages'
+    workspace:
+      clean: all
+    steps:
+    - task: CmdLine@2
+      displayName: Checkout $(Build.SourceBranchName)
+      inputs:
+        script: 'git checkout $(Build.SourceBranchName)'
+
+    - task: CopyFiles@2
+      displayName: 'Filter folders'
+      inputs:
+        Contents: |
+          **
+          !**\.git\**
+          !**\.terraform\**
+        targetFolder: $(Build.ArtifactStagingDirectory)
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifacts'
+      inputs:
+        pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        artifactName: '${{ parameters.artifactName }}'
+        publishLocation: 'Container'

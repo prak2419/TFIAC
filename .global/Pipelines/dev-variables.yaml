@@ -1,0 +1,8 @@
+variables:
+  backendResourceGroupName: 'rg-tf-backend'
+  backendStorageAccountName: 'stacctfrajanaka77'
+  backendContainerName: 'terraform'
+  moduleName: "vnetdemo"
+  artifactName: "Demo"
+  environment: "dev"
+  poolName: 'IACS Pool'
