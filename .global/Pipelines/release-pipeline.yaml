@@ -9,7 +9,7 @@ parameters:
 jobs:
   - deployment:
     pool: $(poolName)
-    displayName: 'Deploy Terraform to ${{ parameters.environment }}'
+    displayName: 'Deploy Terraform Modules'
     environment: '${{ parameters.environment }}'
     workspace:
       clean: all
