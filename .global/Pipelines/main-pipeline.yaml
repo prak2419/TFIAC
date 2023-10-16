@@ -1,0 +1,26 @@
+parameters:
+  - name: 'environment'
+    type: string
+    default: dev
+
+variables:
+  - ${{ if eq(parameters.environment, 'dev') }}:
+    - template: dev-variables.yaml
+  - ${{ if eq(parameters.environment, 'prod') }}:
+    - template: prod-variables.yaml
+
+#Trigger from branch
+trigger:
+  branches:
+    include:
+      - prod
+      - dev0
+
+stages:
+- stage: Build
+  jobs:
+  - template: build-pipeline.yaml
+  
+- stage: Deploy
+  jobs:
+  - template: release-pipeline.yaml

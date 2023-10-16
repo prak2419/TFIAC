@@ -1,0 +1,22 @@
+rg_name = "rg-tf-test2"
+location = "centralindia"
+keyvault_name = "rajanakakv02"
+tenant_id = "91e8cdd3-b1ee-4f73-b960-8b2257d216b8"
+sku_name = "standard"
+soft_delete_retention_days = 90
+purge_protection_enabled = false
+storage_account_name = "rajanakastorage02"
+account_tier = "Standard"
+account_replication_type = "LRS"
+account_kind = "StorageV2"
+min_tls_version = "TLS1_2"
+enable_https_traffic_only = true
+public_network_access_enabled = true
+vnet_name = "vnet-tf-demo2"
+subnet_name = "subnet-tf-demo2"
+address_space = ["10.17.0.0/22"]
+subnet_address_prefixes = ["10.17.0.0/24"]
+tags = {
+  environment = "prod"
+  costcenter = "it"
+  }
