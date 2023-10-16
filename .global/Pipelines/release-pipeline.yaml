@@ -61,7 +61,7 @@ jobs:
                 $date = Get-Date -format '%y%m%d%H%M%S'
                 $buildversion = "${Build.BuildNumber}"
                 $appendString = "$date-$buildversion"
-                Copy-Item $(System.ArtifactsDirectory)\Demo\${{ parameters.environment }}-tfplan C:\dev\tfstate\$appendString-${{ parameters.environment }}-tfplan
+                Copy-Item $(System.ArtifactsDirectory)\Demo\${{ parameters.environment }}\${{ parameters.environment }}-tfplan C:\dev\tfstate\$appendString-${{ parameters.environment }}-tfplan
               displayName: 'Copy Terraform plan to remote folder'
               workingDirectory: '$(System.ArtifactsDirectory)\Demo\${{ parameters.environment }}'
 
