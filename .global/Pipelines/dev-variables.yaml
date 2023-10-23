@@ -6,3 +6,6 @@ variables:
   artifactName: "Demo"
   environment: "dev"
   poolName: 'IACS Pool'
+  buildType: 'current'
+  buildVersion: 'latest'
+  buildId: ''

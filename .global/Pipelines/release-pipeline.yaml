@@ -5,6 +5,9 @@ parameters:
   backendResourceGroupName: $(backendResourceGroupName)
   backendStorageAccountName: $(backendStorageAccountName)
   backendContainerName: $(backendContainerName)
+  buildType: $(buildType)
+  buildVersion: $(buildVersion)
+  buildId: $(buildId)
 
 jobs:
   - deployment:
@@ -20,7 +23,9 @@ jobs:
             - task: DownloadBuildArtifacts@1
               displayName: 'Download Build Artifacts'
               inputs:
-                buildType: 'current'
+                buildType: '${{ parameters.buildType }}'
+                buildVersionToDownload: '${{ parameters.buildVersion }}'
+                buildId: '${{ parameters.buildId }}'
                 artifactName: ${{ parameters.artifactName }}
                 downloadType: 'single'
                 downloadPath: $(System.ArtifactsDirectory)
