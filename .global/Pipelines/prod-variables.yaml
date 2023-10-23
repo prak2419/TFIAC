@@ -2,6 +2,7 @@ variables:
   backendResourceGroupName: 'rg-tf-backend'
   backendStorageAccountName: 'stacctfrajanaka77'
   backendContainerName: 'terraform'
+  backendRemoteContainerName: 'remotestate'
   moduleName: "vnetdemo"
   artifactName: "Demo"
   environment: "prod"

@@ -5,6 +5,7 @@ parameters:
   backendResourceGroupName: $(backendResourceGroupName)
   backendStorageAccountName: $(backendStorageAccountName)
   backendContainerName: $(backendContainerName)
+  backendRemoteContainerName: $(backendRemoteContainerName)
   buildType: $(buildType)
   buildVersion: $(buildVersion)
   buildId: $(buildId)
@@ -78,7 +79,7 @@ jobs:
                 resourceGroup: ${{ parameters.backendResourceGroupName }}
                 storage: ${{ parameters.backendStorageAccountName }} 
                 ContainerName: ${{ parameters.backendContainerName }}
-                BlobPrefix: "$(Build.BuildNumber)_"
+                BlobPrefix: "$(Build.BuildNumber)_${{ parameters.moduleName }}-${{ parameters.environment }}.tfstate"
                                 
             - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV4@4
               displayName: 'Terraform : azurerm - Apply'
