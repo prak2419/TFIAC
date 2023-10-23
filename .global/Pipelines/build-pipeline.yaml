@@ -11,10 +11,10 @@ jobs:
     workspace:
       clean: all
     steps:
-    - task: CmdLine@2
-      displayName: Checkout $(Build.SourceBranchName)
-      inputs:
-        script: 'git checkout $(Build.SourceBranchName)'
+    - checkout: self
+      persistCredentials: true
+      clean: true
+      fetchDepth: true
 
     - task: CopyFiles@2
       displayName: 'Filter folders'
