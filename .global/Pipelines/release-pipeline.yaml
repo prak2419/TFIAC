@@ -60,16 +60,25 @@ jobs:
                 commandOptions: '-var-file=${{ parameters.environment }}.auto.tfvars -out=${{ parameters.environment }}-tfplan'
                 environmentServiceNameAzureRM: SharedResources
         
-            - powershell: |
-                $copydir = "C:\dev\tfstate"
-                if (!(Test-Path $copydir)) { New-Item -ItemType Directory -Force -Path $copydir }
-                $date = Get-Date -format '%y%m%d%H%M%S'
-                $buildversion = "${Build.BuildNumber}"
-                $appendString = "$date-$buildversion"
-                Copy-Item $(System.ArtifactsDirectory)\Demo\${{ parameters.environment }}\${{ parameters.environment }}-tfplan C:\dev\tfstate\$appendString-${{ parameters.environment }}-tfplan
-              displayName: 'Copy Terraform plan to remote folder'
-              workingDirectory: '$(System.ArtifactsDirectory)\Demo\${{ parameters.environment }}'
+            #- powershell: |
+            #    $copydir = "C:\dev\tfstate"
+            #    if (!(Test-Path $copydir)) { New-Item -ItemType Directory -Force -Path $copydir }
+            #    $date = Get-Date -format '%y%m%d%H%M%S'
+            #    $buildversion = "${Build.BuildNumber}"
+            #    $appendString = "$date-$buildversion"
+            #    Copy-Item $(System.ArtifactsDirectory)\Demo\${{ parameters.environment }}\${{ parameters.environment }}-tfplan C:\dev\tfstate\$appendString-${{ parameters.environment }}-tfplan
+            #  displayName: 'Copy Terraform plan to remote folder'
+            #  workingDirectory: '$(System.ArtifactsDirectory)\Demo\${{ parameters.environment }}'
 
+            - task: AzureFileCopy@4
+              inputs:
+                SourcePath: $(System.ArtifactsDirectory)\Demo\${{ parameters.environment }}\${{ parameters.environment }}-tfplan 
+                azureSubscription: 'SharedResources' 
+                Destination: 'AzureBlob'
+                storage: {{ parameters.backendStorageAccountName }} 
+                ContainerName: {{ parameters.backendContainerName }}
+                blobPrefix: "$(Build.BuildNumber)_"
+                                
             - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV4@4
               displayName: 'Terraform : azurerm - Apply'
               inputs:
