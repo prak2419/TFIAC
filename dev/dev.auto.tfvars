@@ -1,7 +1,7 @@
 rg_name = "rg-tf-test1"
 location = "centralindia"
 keyvault_name = "rajanakakv0"
-tenant_id = "xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+tenant_id = "91e8cdd3-b1ee-4f73-b960-8b2257d216b8"
 sku_name = "standard"
 soft_delete_retention_days = 90
 purge_protection_enabled = false
