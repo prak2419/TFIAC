@@ -75,9 +75,10 @@ jobs:
                 SourcePath: $(System.ArtifactsDirectory)\Demo\${{ parameters.environment }}\${{ parameters.environment }}-tfplan 
                 azureSubscription: 'SharedResources' 
                 Destination: 'AzureBlob'
+                resourceGroup: ${{ parameters.backendResourceGroupName }}
                 storage: {{ parameters.backendStorageAccountName }} 
                 ContainerName: {{ parameters.backendContainerName }}
-                blobPrefix: "$(Build.BuildNumber)_"
+                BlobPrefix: "$(Build.BuildNumber)_"
                                 
             - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV4@4
               displayName: 'Terraform : azurerm - Apply'
