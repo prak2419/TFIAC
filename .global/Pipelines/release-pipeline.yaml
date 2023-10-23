@@ -76,8 +76,8 @@ jobs:
                 azureSubscription: 'SharedResources' 
                 Destination: 'AzureBlob'
                 resourceGroup: ${{ parameters.backendResourceGroupName }}
-                storage: {{ parameters.backendStorageAccountName }} 
-                ContainerName: {{ parameters.backendContainerName }}
+                storage: ${{ parameters.backendStorageAccountName }} 
+                ContainerName: ${{ parameters.backendContainerName }}
                 BlobPrefix: "$(Build.BuildNumber)_"
                                 
             - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV4@4
