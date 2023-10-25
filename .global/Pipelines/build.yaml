@@ -84,7 +84,7 @@ jobs:
               Timestamp = $timestamp
           }
           $arr += $psobj
-          $arr | Export-Csv -Path .\$blobName -NoTypeInformation
+          $arr | Export-Csv -Path .\$blobName -NoTypeInformation -Append -Force
           Set-AzStorageBlobContent -Container $containerName -File .\$blobName -Blob $blobName -Context $storageContext -Force
           Remove-Item -Path .\$blobName -Force
         workingDirectory: '$(System.ArtifactsDirectory)'
