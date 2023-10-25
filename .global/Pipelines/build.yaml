@@ -59,7 +59,6 @@ jobs:
           $resourceGroupName = "$(backendResourceGroupName)"
           $containerName = "$(buildContainerName)"
           $blobName = "buildId.csv"
-
           $storageAccount = Get-AzStorageAccount -ResourceGroupName $resourceGroupName -Name $storageAccountName
           $storageContext = $storageAccount.Context
           $container = Get-AzStorageContainer -Name $containerName -Context $storageContext
