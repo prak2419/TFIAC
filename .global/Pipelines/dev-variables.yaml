@@ -9,7 +9,7 @@ variables:
   environment: "dev"
   serviceConnection: 'SharedResources'
   poolName: 'IACS Pool'
-  project: 'TFIAC'
+  project: 'IACS'
   pipeline: 'GH_Demo'
   #buildType: 'specific'
   #buildVersion: 'specific'
