@@ -3,6 +3,7 @@ variables:
   backendStorageAccountName: 'stacctfrajanaka77'
   backendContainerName: 'terraform'
   backendRemoteContainerName: 'remotestate'
+  buildContainerName: 'build-content'
   moduleName: "vnetdemo"
   artifactName: "Demo"
   environment: "dev"
