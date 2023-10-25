@@ -76,7 +76,7 @@ jobs:
           $storageAccount = Get-AzStorageAccount -ResourceGroupName $resourceGroupName -Name $storageAccountName
           $storageContext = $storageAccount.Context
           $container = Get-AzStorageContainer -Name $containerName -Context $storageContext
-          $blob = Get-AzStorageBlob -Container $containerName -Context $storageContext -Blob $blobName -Destination .\$blobName -ErrorAction SilentlyContinue
+          $blob = Get-AzStorageBlobContent -Container $containerName -Context $storageContext -Blob $blobName -Destination .\$blobName -ErrorAction SilentlyContinue
           $arr = @()
           $psobj = [PSCustomobject]@{
               Buildid = $buildId
