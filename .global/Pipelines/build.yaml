@@ -98,25 +98,25 @@ jobs:
       displayName: 'Terraform : azurerm - Init'
       inputs:
         backendServiceArm: SharedResources
-        backendAzureRmResourceGroupName: ${{ parameters.backendResourceGroupName }}
-        backendAzureRmStorageAccountName: ${{ parameters.backendStorageAccountName }}
-        backendAzureRmContainerName: ${{ parameters.backendContainerName }}
-        backendAzureRmKey: '${{ parameters.moduleName }}-${{ parameters.environment }}.tfstate'
-        workingDirectory: '$(System.ArtifactsDirectory)\${{ parameters.environment }}'
+        backendAzureRmResourceGroupName: $(backendResourceGroupName)
+        backendAzureRmStorageAccountName: $(backendStorageAccountName)
+        backendAzureRmContainerName: $(backendContainerName)
+        backendAzureRmKey: '$(moduleName)-$(environment).tfstate'
+        workingDirectory: '$(System.ArtifactsDirectory)\$(environment)'
             
     - powershell: |
-        terraform workspace new ${{ parameters.environment }}
-        terraform workspace select ${{ parameters.environment }}
+        terraform workspace new $(environment)
+        terraform workspace select $(environment)
       displayName: 'Create and Set the Terraform workspace'
-      workingDirectory: '$(System.ArtifactsDirectory)\${{ parameters.environment }}'
+      workingDirectory: '$(System.ArtifactsDirectory)\$(environment)'
 
     - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV4@4
       displayName: 'Terraform : azurerm - Plan'
       inputs:
         provider: azurerm
         command: 'plan'
-        workingDirectory: '$(System.ArtifactsDirectory)\${{ parameters.environment }}'
-        commandOptions: '-var-file=${{ parameters.environment }}.auto.tfvars -out=${{ parameters.environment }}-tfplan'
+        workingDirectory: '$(System.ArtifactsDirectory)\$(environment)'
+        commandOptions: '-var-file=$(environment).auto.tfvars -out=$(environment)-tfplan'
         environmentServiceNameAzureRM: SharedResources
         
             #- powershell: |
@@ -129,19 +129,19 @@ jobs:
             #  displayName: 'Copy Terraform plan to remote folder'
             #  workingDirectory: '$(System.ArtifactsDirectory)\Demo\${{ parameters.environment }}'
     - powershell: |
-        terraform show $(System.ArtifactsDirectory)\${{ parameters.environment }}\${{ parameters.environment }}-tfplan > ${{ parameters.environment }}.ansi
+        terraform show $(System.ArtifactsDirectory)\$(environment)\$(environment)-tfplan > $(environment).ansi
       displayName: 'Create and Set the Terraform workspace'
-      workingDirectory: '$(System.ArtifactsDirectory)\${{ parameters.environment }}'
+      workingDirectory: '$(System.ArtifactsDirectory)\$(environment)'
 
     - task: AzureFileCopy@4
       inputs:
-        SourcePath: $(System.ArtifactsDirectory)\${{ parameters.environment }}\${{ parameters.environment }}.ansi
+        SourcePath: $(System.ArtifactsDirectory)\$(environment)\$(environment).ansi
         azureSubscription: 'SharedResources' 
         Destination: 'AzureBlob'
-        resourceGroup: ${{ parameters.backendResourceGroupName }}
-        storage: ${{ parameters.backendStorageAccountName }} 
-        ContainerName: ${{ parameters.backendContainerName }}
-        BlobPrefix: "$(Build.BuildNumber)_${{ parameters.moduleName }}-${{ parameters.environment }}.ansi"
+        resourceGroup: $(backendResourceGroupName)
+        storage: $(backendStorageAccountName)
+        ContainerName: $(backendContainerName)
+        BlobPrefix: "$(Build.BuildNumber)_$(moduleName)-$(environment).ansi"
               
 
     - task: PublishBuildArtifacts@1
