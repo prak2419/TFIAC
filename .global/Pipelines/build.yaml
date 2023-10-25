@@ -40,6 +40,20 @@ jobs:
           !**\.terraform\**
         targetFolder: $(Build.ArtifactStagingDirectory)
     
+    - task: AzureCLI@2
+      displayName: 'Azure CLI - Promote Service Principal'
+      inputs:
+        azureSubscription: $(serviceConnection)
+        scriptType: ps
+        scriptLocation: inlineScript
+        inlineScript: |
+          Write-Host "##vso[task.setvariable variable=ARM_CLIENT_ID]$($env:servicePrincipalId)"
+
+          Write-Host "##vso[task.setvariable variable=ARM_CLIENT_SECRET]$($env:servicePrincipalKey)"
+
+          Write-Host "##vso[task.setvariable variable=ARM_TENANT_ID]$($env:tenantId)"
+        addSpnToEnvironment: true
+    
     - task: AzurePowerShell@5
       inputs:
         azureSubscription: $(serviceConnection)
@@ -50,9 +64,9 @@ jobs:
           $buildId = "$(Build.BuildId)"
           $timestamp = Get-Date -Format "yyyyMMdd_HHmmss""
           $buildNumber = "$(Build.BuildNumber)"
-          $azureAplicationId ="$($env:servicePrincipalId)"
-          $azureTenantId= "$($env:tenantId)"
-          $azurePassword = ConvertTo-SecureString "$($env:servicePrincipalKey)" -AsPlainText -Force
+          $azureAplicationId ="$(ARM_CLIENT_ID)"
+          $azureTenantId= "$(ARM_TENANT_ID)"
+          $azurePassword = ConvertTo-SecureString "$(ARM_CLIENT_SECRET)" -AsPlainText -Force
           $psCred = New-Object System.Management.Automation.PSCredential($azureAplicationId , $azurePassword)
           Connect-AzAccount -Credential $psCred -TenantId $azureTenantId  -ServicePrincipal
           $storageAccountName = "$(backendStorageAccountName)"
