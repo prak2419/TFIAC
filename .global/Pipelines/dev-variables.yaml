@@ -6,7 +6,8 @@ variables:
   moduleName: "vnetdemo"
   artifactName: "Demo"
   environment: "dev"
+  serviceConnection: 'SharedResources'
   poolName: 'IACS Pool'
-  buildType: 'current'
-  buildVersion: 'latest'
-  buildId: ''
+  buildType: 'specific'
+  buildVersion: 'specific'
+  buildId: '20231023.8'
