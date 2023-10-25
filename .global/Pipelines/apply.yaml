@@ -23,8 +23,6 @@ parameters:
   - name: 'buildId'
     type: string
     default: ''
-    values:
-    - ''
   
 variables:
   - ${{ if eq(parameters.environment, 'dev') }}:
