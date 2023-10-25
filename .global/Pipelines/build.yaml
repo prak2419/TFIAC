@@ -62,7 +62,7 @@ jobs:
         azurePowerShellVersion: 'LatestVersion'
         Inline: |
           $buildId = "$(Build.BuildId)"
-          $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+          $timestamp = Get-Date -Format "yyyy/MM/dd_HH:mm:ss"
           $buildNumber = "$(Build.BuildNumber)"
           $azureAplicationId ="$(CLIENT_ID)"
           $azureTenantId= "$(TENANT_ID)"
