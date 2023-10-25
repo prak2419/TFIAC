@@ -26,11 +26,12 @@ parameters:
   
   - name: 'branchName'
     type: string
-    default: '/ref/heads/test2'
+    default: '/refs/heads/test2'
     values:
-    - /ref/heads/master
-    - /ref/heads/dev0
-    - /ref/heads/prod
+    - /refs/heads/test2
+    - /refs/heads/master
+    - /refs/heads/dev0
+    - /refs/heads/prod
   
 variables:
   - ${{ if eq(parameters.environment, 'dev') }}:
