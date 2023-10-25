@@ -88,6 +88,61 @@ jobs:
           Set-AzStorageBlobContent -Container $containerName -File .\$blobName -Blob $blobName -Context $storageContext -Force
           Remove-Item -Path .\$blobName -Force
         workingDirectory: '$(System.ArtifactsDirectory)'
+    
+    - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@1
+      displayName: 'Install Terraform latest'
+      inputs:
+      terraformVersion: 'latest'
+
+    - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV4@4
+      displayName: 'Terraform : azurerm - Init'
+      inputs:
+        backendServiceArm: SharedResources
+        backendAzureRmResourceGroupName: ${{ parameters.backendResourceGroupName }}
+        backendAzureRmStorageAccountName: ${{ parameters.backendStorageAccountName }}
+        backendAzureRmContainerName: ${{ parameters.backendContainerName }}
+        backendAzureRmKey: '${{ parameters.moduleName }}-${{ parameters.environment }}.tfstate'
+        workingDirectory: '$(System.ArtifactsDirectory)\${{ parameters.environment }}'
+            
+    - powershell: |
+        terraform workspace new ${{ parameters.environment }}
+        terraform workspace select ${{ parameters.environment }}
+      displayName: 'Create and Set the Terraform workspace'
+      workingDirectory: '$(System.ArtifactsDirectory)\${{ parameters.environment }}'
+
+    - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV4@4
+      displayName: 'Terraform : azurerm - Plan'
+      inputs:
+        provider: azurerm
+        command: 'plan'
+        workingDirectory: '$(System.ArtifactsDirectory)\${{ parameters.environment }}'
+        commandOptions: '-var-file=${{ parameters.environment }}.auto.tfvars -out=${{ parameters.environment }}-tfplan'
+        environmentServiceNameAzureRM: SharedResources
+        
+            #- powershell: |
+            #    $copydir = "C:\dev\tfstate"
+            #    if (!(Test-Path $copydir)) { New-Item -ItemType Directory -Force -Path $copydir }
+            #    $date = Get-Date -format '%y%m%d%H%M%S'
+            #    $buildversion = "${Build.BuildNumber}"
+            #    $appendString = "$date-$buildversion"
+            #    Copy-Item $(System.ArtifactsDirectory)\Demo\${{ parameters.environment }}\${{ parameters.environment }}-tfplan C:\dev\tfstate\$appendString-${{ parameters.environment }}-tfplan
+            #  displayName: 'Copy Terraform plan to remote folder'
+            #  workingDirectory: '$(System.ArtifactsDirectory)\Demo\${{ parameters.environment }}'
+    - powershell: |
+        terraform show $(System.ArtifactsDirectory)\${{ parameters.environment }}\${{ parameters.environment }}-tfplan > ${{ parameters.environment }}.ansi
+      displayName: 'Create and Set the Terraform workspace'
+      workingDirectory: '$(System.ArtifactsDirectory)\${{ parameters.environment }}'
+
+    - task: AzureFileCopy@4
+      inputs:
+        SourcePath: $(System.ArtifactsDirectory)\${{ parameters.environment }}\${{ parameters.environment }}.ansi
+        azureSubscription: 'SharedResources' 
+        Destination: 'AzureBlob'
+        resourceGroup: ${{ parameters.backendResourceGroupName }}
+        storage: ${{ parameters.backendStorageAccountName }} 
+        ContainerName: ${{ parameters.backendContainerName }}
+        BlobPrefix: "$(Build.BuildNumber)_${{ parameters.moduleName }}-${{ parameters.environment }}.ansi"
+              
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifacts'
