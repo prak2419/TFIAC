@@ -9,6 +9,6 @@ variables:
   environment: "dev"
   serviceConnection: 'SharedResources'
   poolName: 'IACS Pool'
-  buildType: 'specific'
-  buildVersion: 'specific'
-  buildId: '20231023.8'
+  #buildType: 'specific'
+  #buildVersion: 'specific'
+  #buildId: '20231023.8'
