@@ -9,6 +9,8 @@ variables:
   environment: "dev"
   serviceConnection: 'SharedResources'
   poolName: 'IACS Pool'
+  project: 'TFIAC'
+  pipeline: 'GH_Demo'
   #buildType: 'specific'
   #buildVersion: 'specific'
   #buildId: '20231023.8'

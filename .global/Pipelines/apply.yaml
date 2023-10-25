@@ -24,6 +24,14 @@ parameters:
     type: string
     default: ''
   
+  - name: 'branchName'
+    type: string
+    default: '/ref/heads/test2'
+    values:
+    - /ref/heads/master
+    - /ref/heads/dev0
+    - /ref/heads/prod
+  
 variables:
   - ${{ if eq(parameters.environment, 'dev') }}:
     - template: dev-variables.yaml
@@ -47,9 +55,12 @@ jobs:
                 buildType: '${{ parameters.buildType }}'
                 buildVersionToDownload: '${{ parameters.buildVersion }}'
                 buildId: '${{ parameters.buildId }}'
+                branchName: '${{ parameters.branchName }}'
                 artifactName: $(artifactName)
                 downloadType: 'single'
                 downloadPath: $(System.ArtifactsDirectory)
+                project: $(project)
+                pipeline: $(pipeline)
         
             - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@1
               displayName: 'Install Terraform latest'
