@@ -3,10 +3,14 @@ variables:
   backendStorageAccountName: 'stacctfrajanaka77'
   backendContainerName: 'terraform'
   backendRemoteContainerName: 'remotestate'
+  buildContainerName: 'build-content'
   moduleName: "vnetdemo"
   artifactName: "Demo"
   environment: "prod"
+  serviceConnection: 'SharedResources'
   poolName: 'IACS Pool'
-  buildType: 'current'
-  buildVersion: 'latest'
-  buildId: ''
+  project: 'IACS'
+  pipeline: 'GH_Demo'
+  #buildType: 'specific'
+  #buildVersion: 'specific'
+  #buildId: '20231023.8'
