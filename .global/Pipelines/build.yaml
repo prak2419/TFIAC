@@ -43,6 +43,7 @@ jobs:
     - task: AzurePowerShell@5
       inputs:
         azureSubscription: $(serviceConnection)
+        ConnectedServiceNameARM: $(serviceConnection)
         ScriptType: 'InlineScript'
         azurePowerShellVersion: 'LatestVersion'
         Inline: |
