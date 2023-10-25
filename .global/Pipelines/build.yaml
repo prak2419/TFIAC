@@ -44,6 +44,7 @@ jobs:
       inputs:
         ConnectedServiceNameARM: $(serviceConnection)
         ScriptType: 'InlineScript'
+        Powershellversion: 'LatestVersion'
         Inline: |
           $buildId = "$(Build.BuildId)"
           $timestamp = Get-Date -Format "yyyyMMdd_HHmmss""
