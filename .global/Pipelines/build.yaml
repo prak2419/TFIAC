@@ -116,7 +116,7 @@ jobs:
         provider: azurerm
         command: 'plan'
         workingDirectory: '$(System.ArtifactsDirectory)\$(environment)'
-        commandOptions: '-var-file=$(environment).auto.tfvars -out=$(environment)-tfplan'
+        commandOptions: '-var-file=$(environment).auto.tfvars -out=$(environment).tfplan'
         environmentServiceNameAzureRM: SharedResources
         
             #- powershell: |
@@ -129,9 +129,19 @@ jobs:
             #  displayName: 'Copy Terraform plan to remote folder'
             #  workingDirectory: '$(System.ArtifactsDirectory)\Demo\${{ parameters.environment }}'
     - powershell: |
-        terraform show $(System.ArtifactsDirectory)\$(environment)\$(environment)-tfplan > $(environment).ansi
+        terraform show $(System.ArtifactsDirectory)\$(environment)\$(environment).tfplan > $(environment).ansi
       displayName: 'Create and Set the Terraform workspace'
       workingDirectory: '$(System.ArtifactsDirectory)\$(environment)'
+    
+    - task: AzureFileCopy@4
+      inputs:
+        SourcePath: $(System.ArtifactsDirectory)\$(environment)\$(environment).tfplan 
+        azureSubscription: 'SharedResources' 
+        Destination: 'AzureBlob'
+        resourceGroup: $(backendResourceGroupName)
+        storage: $(backendStorageAccountName)
+        ContainerName: $(backendRemoteContainerName)
+        BlobPrefix: "$(Build.BuildNumber)_$(moduleName)-$(environment).tfplan"
 
     - task: AzureFileCopy@4
       inputs:
@@ -140,7 +150,7 @@ jobs:
         Destination: 'AzureBlob'
         resourceGroup: $(backendResourceGroupName)
         storage: $(backendStorageAccountName)
-        ContainerName: $(backendContainerName)
+        ContainerName: $(backendRemoteContainerName)
         BlobPrefix: "$(Build.BuildNumber)_$(moduleName)-$(environment).ansi"
               
 
