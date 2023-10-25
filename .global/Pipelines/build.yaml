@@ -77,5 +77,5 @@ jobs:
       displayName: 'Publish Artifacts'
       inputs:
         pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-        artifactName: '${{ parameters.artifactName }}'
+        artifactName: '$(artifactName)'
         publishLocation: 'Container'
