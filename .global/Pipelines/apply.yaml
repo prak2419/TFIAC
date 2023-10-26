@@ -22,7 +22,7 @@ parameters:
   
   - name: 'buildId'
     type: string
-    default: ''
+    default: ' '
   
   - name: 'branchName'
     type: string
