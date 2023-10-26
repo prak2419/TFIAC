@@ -167,7 +167,7 @@ jobs:
         Destination: 'AzureBlob'
         resourceGroup: $(backendResourceGroupName)
         storage: $(backendStorageAccountName)
-        ContainerName: $(backendRemoteContainerName)
+        ContainerName: $(buildContainerName)
         BlobPrefix: "buildId.csv"
     
     #- task: AzureCLI@2
