@@ -51,6 +51,46 @@ jobs:
       runOnce:
         deploy:
           steps:
+            - task: AzureCLI@2
+              displayName: 'Azure CLI - Promote Service Principal'
+              inputs:
+                azureSubscription: $(serviceConnection)
+                scriptType: ps
+                scriptLocation: inlineScript
+                inlineScript: |
+                  Write-Host "##vso[task.setvariable variable=CLIENT_ID]$($env:servicePrincipalId)"
+
+                  Write-Host "##vso[task.setvariable variable=CLIENT_SECRET]$($env:servicePrincipalKey)"
+
+                  Write-Host "##vso[task.setvariable variable=TENANT_ID]$($env:tenantId)"
+                addSpnToEnvironment: true   
+
+            - task: AzurePowerShell@5
+              inputs:
+                azureSubscription: $(serviceConnection)
+                ConnectedServiceNameARM: $(serviceConnection)
+                ScriptType: 'InlineScript'
+                azurePowerShellVersion: 'LatestVersion'
+                Inline: |
+                  $azureAplicationId ="$(CLIENT_ID)"
+                  $azureTenantId= "$(TENANT_ID)"
+                  $azurePassword = ConvertTo-SecureString "$(CLIENT_SECRET)" -AsPlainText -Force
+                  $psCred = New-Object System.Management.Automation.PSCredential($azureAplicationId , $azurePassword)
+                  Connect-AzAccount -Credential $psCred -TenantId $azureTenantId  -ServicePrincipal
+                  $storageAccountName = "$(backendStorageAccountName)"
+                  $resourceGroupName = "$(backendResourceGroupName)"
+                  $containerName = "$(buildContainerName)"
+                  $blobName = "buildId.csv"
+                  $storageAccount = Get-AzStorageAccount -ResourceGroupName $resourceGroupName -Name $storageAccountName
+                  $storageContext = $storageAccount.Context
+                  $container = Get-AzStorageContainer -Name $containerName -Context $storageContext
+                  $blob = Get-AzStorageBlobContent -Container $containerName -Context $storageContext -Blob $blobName -Destination .\$blobName -ErrorAction SilentlyContinue
+                  $values = Import-CSV .\$blobName
+                  $buildId = $values.buildId
+                  Write-Host "##vso[task.setvariable variable=BUILD_ID]$($buildId)"
+                  Remove-Item -Path .\$blobName -Force
+                workingDirectory: '$(System.ArtifactsDirectory)\$(artifactName)'
+
             - ${{ if eq( parameters['buildType'], 'specific') }}:
               - task: DownloadBuildArtifacts@1
                 displayName: 'Download Build Artifacts'
@@ -71,7 +111,7 @@ jobs:
                 inputs:
                   buildType: 'specific'
                   buildVersionToDownload: 'specific'
-                  buildId: '$(Build.BuildId)'
+                  buildId: '$(BUILD_ID)'
                   branchName: '${{ parameters.branchName }}'
                   artifactName: $(artifactName)
                   downloadType: 'single'
