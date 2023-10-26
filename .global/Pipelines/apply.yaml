@@ -97,11 +97,11 @@ jobs:
                       "x-ms-version" = "2020-04-08"
                     }
 
-                    Invoke-WebRequest -uri $blobUri -Method Get -Headers $header -OutFile $(System.ArtifactsDirectory)\buildId.csv
-                    $values = Import-CSV $(System.ArtifactsDirectory)\buildId.csv
+                    Invoke-WebRequest -uri $blobUri -Method Get -Headers $header -OutFile .\buildId.csv
+                    $values = Import-CSV .\buildId.csv
                     $buildId = $values[-1].buildId
                     Write-Host "##vso[task.setvariable variable=BUILD_ID]$($buildId)"
-                    Remove-Item -Path $(System.ArtifactsDirectory)\buildId.csv -Force
+                    Remove-Item -Path .\buildId.csv -Force
                   workingDirectory: '$(System.ArtifactsDirectory)'
 
             - ${{ if eq( parameters['buildType'], 'specific') }}:
