@@ -89,7 +89,7 @@ jobs:
                   $buildId = $values.buildId
                   Write-Host "##vso[task.setvariable variable=BUILD_ID]$($buildId)"
                   Remove-Item -Path .\$blobName -Force
-                workingDirectory: '$(System.ArtifactsDirectory)\$(artifactName)'
+                workingDirectory: '$(System.ArtifactsDirectory)'
 
             - ${{ if eq( parameters['buildType'], 'specific') }}:
               - task: DownloadBuildArtifacts@1
