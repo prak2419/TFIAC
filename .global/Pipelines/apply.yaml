@@ -69,8 +69,8 @@ jobs:
               - task: DownloadBuildArtifacts@1
                 displayName: 'Download Build Artifacts'
                 inputs:
-                  buildType: '${{ parameters.buildType }}'
-                  buildVersionToDownload: '${{ parameters.buildVersion }}'
+                  buildType: 'specific'
+                  buildVersionToDownload: 'specific'
                   buildId: '$(Build.BuildId)'
                   branchName: '${{ parameters.branchName }}'
                   artifactName: $(artifactName)
