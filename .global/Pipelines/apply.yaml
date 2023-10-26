@@ -74,23 +74,34 @@ jobs:
                   ScriptType: 'InlineScript'
                   azurePowerShellVersion: 'LatestVersion'
                   Inline: |
-                    $azureAplicationId ="$(CLIENT_ID)"
-                    $azureTenantId= "$(TENANT_ID)"
-                    $azurePassword = ConvertTo-SecureString "$(CLIENT_SECRET)" -AsPlainText -Force
-                    $psCred = New-Object System.Management.Automation.PSCredential($azureAplicationId , $azurePassword)
-                    Connect-AzAccount -Credential $psCred -TenantId $azureTenantId  -ServicePrincipal
-                    $storageAccountName = "$(backendStorageAccountName)"
-                    $resourceGroupName = "$(backendResourceGroupName)"
-                    $containerName = "$(buildContainerName)"
-                    $blobName = "buildId.csv"
-                    $storageAccount = Get-AzStorageAccount -ResourceGroupName $resourceGroupName -Name $storageAccountName
-                    $storageContext = $storageAccount.Context
-                    $container = Get-AzStorageContainer -Name $containerName -Context $storageContext
-                    $blob = Get-AzStorageBlobContent -Container $containerName -Context $storageContext -Blob $blobName -Destination .\$blobName -ErrorAction SilentlyContinue
-                    $values = Import-CSV .\$blobName
+                    $azspkey = "$(CLIENT_SECRET)"
+                    $azspid = "$(CLIENT_ID)"
+                    $aztenantid = "$(TENANT_ID) "
+                    $blobUri = "https://$(backendStorageAccountName).blob.core.windows.net/$(buildContainerName)/buildId.csv"
+                    $body = @{
+                        client_id = $azspid
+                        client_secret = $azspkey
+                        grant_type = "client_credentials"
+                        resource = "https://storage.azure.com/"
+                    }
+
+                    $resp = Invoke-WebRequest -Uri "https://login.microsoftonline.com/$($aztenantid)/oauth2/token" -Body $body -Method Post -ContentType "application/x-www-form-urlencoded" -UseBasicParsing
+
+                    if ($resp.statusCode -eq 200) {
+                        $token = ($resp | ConvertFrom-Json).access_token
+                    }
+
+                    ##Get Blob to download using API
+                    $header = @{
+                      Authorization = "Bearer " + $token
+                      "x-ms-version" = "2020-04-08"
+                    }
+
+                    Invoke-WebRequest -uri $blobUri -Method Get -Headers $header -OutFile $(System.ArtifactsDirectory)\buildId.csv
+                    $values = Import-CSV $(System.ArtifactsDirectory)\buildId.csv
                     $buildId = $values[-1].buildId
                     Write-Host "##vso[task.setvariable variable=BUILD_ID]$($buildId)"
-                    Remove-Item -Path .\$blobName -Force
+                    Remove-Item -Path $(System.ArtifactsDirectory)\buildId.csv -Force
                   workingDirectory: '$(System.ArtifactsDirectory)'
 
             - ${{ if eq( parameters['buildType'], 'specific') }}:
