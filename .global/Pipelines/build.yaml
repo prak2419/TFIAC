@@ -137,7 +137,7 @@ jobs:
               resource = "https://storage.azure.com/"
           }
 
-          $resp = Invoke-WebRequest -Uri "https://login.microsoftonline.com/$($aztenantid)/oauth2/token" -Body $body -Method Post -ContentType "application/x-www-form-urlencoded"
+          $resp = Invoke-WebRequest -Uri "https://login.microsoftonline.com/$($aztenantid)/oauth2/token" -Body $body -Method Post -ContentType "application/x-www-form-urlencoded" -UseBasicParsing
 
           if ($resp.statusCode -eq 200) {
               $token = ($resp | ConvertFrom-Json).access_token
