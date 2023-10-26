@@ -40,55 +40,6 @@ jobs:
           !**\.terraform\**
         targetFolder: $(Build.ArtifactStagingDirectory)
     
-    - task: AzureCLI@2
-      displayName: 'Azure CLI - Promote Service Principal'
-      inputs:
-        azureSubscription: $(serviceConnection)
-        scriptType: ps
-        scriptLocation: inlineScript
-        inlineScript: |
-          Write-Host "##vso[task.setvariable variable=CLIENT_ID]$($env:servicePrincipalId)"
-
-          Write-Host "##vso[task.setvariable variable=CLIENT_SECRET]$($env:servicePrincipalKey)"
-
-          Write-Host "##vso[task.setvariable variable=TENANT_ID]$($env:tenantId)"
-        addSpnToEnvironment: true
-    
-    - task: AzurePowerShell@5
-      inputs:
-        azureSubscription: $(serviceConnection)
-        ConnectedServiceNameARM: $(serviceConnection)
-        ScriptType: 'InlineScript'
-        azurePowerShellVersion: 'LatestVersion'
-        Inline: |
-          $buildId = "$(Build.BuildId)"
-          $timestamp = Get-Date -Format "yyyy/MM/dd_HH:mm:ss"
-          $buildNumber = "$(Build.BuildNumber)"
-          $azureAplicationId ="$(CLIENT_ID)"
-          $azureTenantId= "$(TENANT_ID)"
-          $azurePassword = ConvertTo-SecureString "$(CLIENT_SECRET)" -AsPlainText -Force
-          $psCred = New-Object System.Management.Automation.PSCredential($azureAplicationId , $azurePassword)
-          Connect-AzAccount -Credential $psCred -TenantId $azureTenantId  -ServicePrincipal
-          $storageAccountName = "$(backendStorageAccountName)"
-          $resourceGroupName = "$(backendResourceGroupName)"
-          $containerName = "$(buildContainerName)"
-          $blobName = "buildId.csv"
-          $storageAccount = Get-AzStorageAccount -ResourceGroupName $resourceGroupName -Name $storageAccountName
-          $storageContext = $storageAccount.Context
-          $container = Get-AzStorageContainer -Name $containerName -Context $storageContext
-          $blob = Get-AzStorageBlobContent -Container $containerName -Context $storageContext -Blob $blobName -Destination .\$blobName -ErrorAction SilentlyContinue
-          $arr = @()
-          $psobj = [PSCustomobject]@{
-              Buildid = $buildId
-              Buildnumber = $buildNumber
-              Timestamp = $timestamp
-          }
-          $arr += $psobj
-          $arr | Export-Csv -Path .\$blobName -NoTypeInformation -Append -Force
-          Set-AzStorageBlobContent -Container $containerName -File .\$blobName -Blob $blobName -Context $storageContext -Force
-          Remove-Item -Path .\$blobName -Force
-        workingDirectory: '$(System.ArtifactsDirectory)'
-    
     - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@1
       displayName: 'Install Terraform latest'
       inputs:
@@ -152,8 +103,56 @@ jobs:
         storage: $(backendStorageAccountName)
         ContainerName: $(backendRemoteContainerName)
         BlobPrefix: "$(Build.BuildNumber)_$(moduleName)-$(environment).ansi"
-              
+    
+    - task: AzureCLI@2
+      displayName: 'Azure CLI - Promote Service Principal'
+      inputs:
+        azureSubscription: $(serviceConnection)
+        scriptType: ps
+        scriptLocation: inlineScript
+        inlineScript: |
+          Write-Host "##vso[task.setvariable variable=CLIENT_ID]$($env:servicePrincipalId)"
 
+          Write-Host "##vso[task.setvariable variable=CLIENT_SECRET]$($env:servicePrincipalKey)"
+
+          Write-Host "##vso[task.setvariable variable=TENANT_ID]$($env:tenantId)"
+        addSpnToEnvironment: true
+    
+    - task: AzurePowerShell@5
+      inputs:
+        azureSubscription: $(serviceConnection)
+        ConnectedServiceNameARM: $(serviceConnection)
+        ScriptType: 'InlineScript'
+        azurePowerShellVersion: 'LatestVersion'
+        Inline: |
+          $buildId = "$(Build.BuildId)"
+          $timestamp = Get-Date -Format "yyyy/MM/dd_HH:mm:ss"
+          $buildNumber = "$(Build.BuildNumber)"
+          $azureAplicationId ="$(CLIENT_ID)"
+          $azureTenantId= "$(TENANT_ID)"
+          $azurePassword = ConvertTo-SecureString "$(CLIENT_SECRET)" -AsPlainText -Force
+          $psCred = New-Object System.Management.Automation.PSCredential($azureAplicationId , $azurePassword)
+          Connect-AzAccount -Credential $psCred -TenantId $azureTenantId  -ServicePrincipal
+          $storageAccountName = "$(backendStorageAccountName)"
+          $resourceGroupName = "$(backendResourceGroupName)"
+          $containerName = "$(buildContainerName)"
+          $blobName = "buildId.csv"
+          $storageAccount = Get-AzStorageAccount -ResourceGroupName $resourceGroupName -Name $storageAccountName
+          $storageContext = $storageAccount.Context
+          $container = Get-AzStorageContainer -Name $containerName -Context $storageContext
+          $blob = Get-AzStorageBlobContent -Container $containerName -Context $storageContext -Blob $blobName -Destination .\$blobName -ErrorAction SilentlyContinue
+          $arr = @()
+          $psobj = [PSCustomobject]@{
+              Buildid = $buildId
+              Buildnumber = $buildNumber
+              Timestamp = $timestamp
+          }
+          $arr += $psobj
+          $arr | Export-Csv -Path .\$blobName -NoTypeInformation -Append -Force
+          Set-AzStorageBlobContent -Container $containerName -File .\$blobName -Blob $blobName -Context $storageContext -Force
+          Remove-Item -Path .\$blobName -Force
+        workingDirectory: '$(System.ArtifactsDirectory)'
+        
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifacts'
       inputs:
