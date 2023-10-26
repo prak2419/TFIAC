@@ -86,7 +86,7 @@ jobs:
                   $container = Get-AzStorageContainer -Name $containerName -Context $storageContext
                   $blob = Get-AzStorageBlobContent -Container $containerName -Context $storageContext -Blob $blobName -Destination .\$blobName -ErrorAction SilentlyContinue
                   $values = Import-CSV .\$blobName
-                  $buildId = $values.buildId
+                  $buildId = $values[-1].buildId
                   Write-Host "##vso[task.setvariable variable=BUILD_ID]$($buildId)"
                   Remove-Item -Path .\$blobName -Force
                 workingDirectory: '$(System.ArtifactsDirectory)'
