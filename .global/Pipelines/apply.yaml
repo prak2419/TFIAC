@@ -19,6 +19,7 @@ parameters:
     values:
     - latest
     - specific
+    - latestFromBranch
   
   - name: 'buildId'
     type: string
