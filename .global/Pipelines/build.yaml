@@ -105,18 +105,51 @@ jobs:
         storage: $(backendStorageAccountName)
         ContainerName: $(backendRemoteContainerName)
         BlobPrefix: "$(Build.BuildNumber)_$(moduleName)-$(environment).ansi"
-    
-    - script: 'azcopy copy ''https://$(backendStorageAccountName).blob.core.windows.net/$(buildContainerName)/buildId.csv'' ''$(System.ArtifactsDirectory)'''
-      displayName: 'Command Line Script'
+
+    - task: AzureCLI@2
+      displayName: 'Azure CLI - Promote Service Principal'
+      inputs:
+        azureSubscription: $(serviceConnection)
+        scriptType: ps
+        scriptLocation: inlineScript
+        inlineScript: |
+          Write-Host "##vso[task.setvariable variable=CLIENT_ID]$($env:servicePrincipalId)"
+          Write-Host "##vso[task.setvariable variable=CLIENT_SECRET]$($env:servicePrincipalKey)"
+          Write-Host "##vso[task.setvariable variable=TENANT_ID]$($env:tenantId)"
+        addSpnToEnvironment: true
     
     - task: PowerShell@2
-      displayName: 'PowerShell Script to modify the CSV'
+      displayName: 'PowerShell Script to download and modify the CSV'
       inputs:
         targetType: 'inline'
         script: |
           $buildId = "$(Build.BuildId)"
           $timestamp = Get-Date -Format "yyyy/MM/dd_HH:mm:ss"
           $buildNumber = "$(Build.BuildNumber)"
+          $azspkey = "$(CLIENT_SECRET)"
+          $azspid = "$(CLIENT_ID)"
+          $aztenantid = "$(TENANT_ID) "
+          $blobUri = "https://$(backendStorageAccountName).blob.core.windows.net/$(buildContainerName)/buildId.csv"
+          $body = @{
+              client_id = $azspid
+              client_secret = $azspkey
+              grant_type = "client_credentials"
+              resource = "https://storage.azure.com/"
+          }
+
+          $resp = Invoke-WebRequest -Uri "https://login.microsoftonline.com/$($aztenantid)/oauth2/token" -Body $body -Method Post -ContentType "application/x-www-form-urlencoded"
+
+          if ($resp.statusCode -eq 200) {
+              $token = ($resp | ConvertFrom-Json).access_token
+          }
+
+          ##Get Blob to download using API
+          $header = @{
+            Authorization = "Bearer " + $token
+            "x-ms-version" = "2020-04-08"
+          }
+
+          Invoke-WebRequest -uri $blobUri -Method Get -Headers $header -OutFile $(System.ArtifactsDirectory)\buildId.csv
           $arr = @()
           $psobj = [PSCustomobject]@{
               Buildid = $buildId
