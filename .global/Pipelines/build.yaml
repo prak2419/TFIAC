@@ -12,7 +12,7 @@ variables:
   - ${{ if eq(parameters.environment, 'prod') }}:
     - template: prod-variables.yaml
 
-#Trigger from branch
+#Trigger from branches
 trigger:
   branches:
     include:
