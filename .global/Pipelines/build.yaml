@@ -16,8 +16,9 @@ variables:
 trigger:
   branches:
     include:
-      - prod
-      - dev0
+    - prod
+    - dev0
+    - test2
 
 jobs:
   - job: 'BuildModule_vnetdemo'
