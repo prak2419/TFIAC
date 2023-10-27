@@ -40,6 +40,8 @@ variables:
   - ${{ if eq(parameters.environment, 'prod') }}:
     - template: prod-variables.yaml
 
+trigger: none
+
 jobs:
   - deployment:
     pool: $(poolName)
